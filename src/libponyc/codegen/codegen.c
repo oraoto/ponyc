@@ -131,6 +131,7 @@ static void init_runtime(compile_t* c)
   c->str_Platform = stringtab("Platform");
   c->str_Main = stringtab("Main");
   c->str_Env = stringtab("Env");
+  c->str_IACA = stringtab("IACA");
 
   c->str_add = stringtab("add");
   c->str_sub = stringtab("sub");

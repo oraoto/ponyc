@@ -720,6 +720,8 @@ static void make_intrinsic_methods(compile_t* c, reach_type_t* t)
       genprim_donotoptimise_methods(c, t);
     else if(name == c->str_Platform)
       genprim_platform_methods(c, t);
+    else if(name == c->str_IACA)
+      genprim_iaca_methods(c, t);
   }
 }
 

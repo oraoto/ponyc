@@ -128,6 +128,7 @@ typedef struct compile_t
   const char* str_Platform;
   const char* str_Main;
   const char* str_Env;
+  const char* str_IACA;
 
   const char* str_add;
   const char* str_sub;

@@ -1316,6 +1316,49 @@ void genprim_platform_methods(compile_t* c, reach_type_t* t)
   BOX_FUNCTION(platform_debug, t);
 }
 
+static void iaca_start(compile_t* c, reach_type_t* t, token_id cap)
+{
+  FIND_METHOD("start", cap);
+
+  compile_type_t* t_result = (compile_type_t*)m->result->c_type;
+  start_function(c, t, m, t_result->use_type, &c_t->use_type, 1);
+
+  LLVMAddFunctionAttr(c_m->func, LLVMAlwaysInlineAttribute);
+
+  LLVMTypeRef void_fn = LLVMFunctionType(c->void_type, NULL, 0, false);
+  LLVMValueRef asmstr = LLVMConstInlineAsm(void_fn,
+    ".byte 0xbb, 0x6f, 0, 0, 0, 0x64, 0x67, 0x90", "", true, false);
+  LLVMValueRef call = LLVMBuildCall(c->builder, asmstr, NULL, 0, "");
+
+  LLVMBuildRet(c->builder, t_result->instance);
+
+  codegen_finishfun(c);
+}
+
+static void iaca_stop(compile_t* c, reach_type_t* t, token_id cap)
+{
+  FIND_METHOD("stop", cap);
+
+  compile_type_t* t_result = (compile_type_t*)m->result->c_type;
+  start_function(c, t, m, t_result->use_type, &c_t->use_type, 1);
+
+  LLVMAddFunctionAttr(c_m->func, LLVMAlwaysInlineAttribute);
+
+  LLVMTypeRef void_fn = LLVMFunctionType(c->void_type, NULL, 0, false);
+  LLVMValueRef asmstr = LLVMConstInlineAsm(void_fn,
+    ".byte 0xbb, 0xde, 0, 0, 0, 0x64, 0x67, 0x90", "", true, false);
+  LLVMValueRef call = LLVMBuildCall(c->builder, asmstr, NULL, 0, "");
+
+  LLVMBuildRet(c->builder, t_result->instance);
+  codegen_finishfun(c);
+}
+
+void genprim_iaca_methods(compile_t* c, reach_type_t* t)
+{
+  BOX_FUNCTION(iaca_start, t);
+  BOX_FUNCTION(iaca_stop, t);
+}
+
 typedef struct num_conv_t
 {
   const char* type_name;
