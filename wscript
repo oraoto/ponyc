@@ -58,6 +58,7 @@ def options(ctx):
     ctx.add_option('--config', action='store', default=CONFIGS[0], help='debug or release build')
     ctx.add_option('--llvm', action='store', default=LLVM_VERSIONS[0], help='llvm version')
     ctx.add_option('--msvc', action='store', default=None, help='MSVC version')
+    ctx.add_option('--etw', action='store_true', default=False, help='Enable Event Tracing for Windows')
 
 # This replaces the default versions of these context classes with subclasses
 # that set their "variant", i.e. build directory, to the debug or release config.
@@ -92,7 +93,7 @@ def configure(ctx):
         base_env.append_value('DEFINES', [
             '_CRT_SECURE_NO_WARNINGS', '_MBCS',
             'PLATFORM_TOOLS_VERSION=%d0' % base_env.MSVC_VERSION,
-            'BUILD_COMPILER="msvc-%d-x64"' % base_env.MSVC_VERSION            
+            'BUILD_COMPILER="msvc-%d-x64"' % base_env.MSVC_VERSION
         ])
         base_env.append_value('LIBPATH', [ base_env.LLVM_DIR ])
 
@@ -273,7 +274,7 @@ def build(ctx):
         includes = [ 'lib/gbenchmark/include' ],
         defines  = [ 'HAVE_STD_REGEX' ]
     )
-    
+
     # blake2
     ctx(
         features = 'c seq',
@@ -302,12 +303,15 @@ def build(ctx):
     )
 
     # libponyrt
+    libponyrt_defines = [ 'PONY_NO_ASSERT']
+    if (ctx.options.etw):
+        libponyrt_defines += ['USE_ETW', 'USE_DYNAMIC_TRACE' ]
     ctx(
         features = 'c cxx cxxstlib seq',
         target   = 'libponyrt',
         source   = ctx.path.ant_glob('src/libponyrt/**/*.c'),
         includes = [ 'src/common', 'src/libponyrt' ] + sslIncludes,
-        defines  = [ 'PONY_NO_ASSERT' ]
+        defines  = libponyrt_defines
     )
 
     # libponyrt.benchmarks
@@ -343,7 +347,7 @@ def build(ctx):
         source    = ctx.path.ant_glob('test/libponyc/**/*.cc'),
         includes  = [ 'src/common', 'src/libponyc', 'src/libponyrt',
                       'lib/gtest' ] + llvmIncludes,
-        defines   = [ 
+        defines   = [
             'PONY_PACKAGES_DIR="' + packagesDir.replace('\\', '\\\\') + '"',
             '_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING'
         ],

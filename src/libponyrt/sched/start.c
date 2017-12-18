@@ -14,6 +14,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#if defined(USE_ETW)
+TRACELOGGING_DEFINE_PROVIDER(
+  etw_provider,
+  "Pony",
+  (0x9d12063d, 0xc320, 0x4bee, 0x8f, 0x5f, 0x1a, 0x1d, 0xb5, 0x49, 0x52, 0x20)
+);
+#endif
+
 typedef struct options_t
 {
   // concurrent options
@@ -107,7 +115,12 @@ PONY_API int pony_init(int argc, char** argv)
   (void)prev_init;
   pony_assert(!prev_init);
 
+#ifdef USE_ETW
+  TraceLoggingRegister(etw_provider);
+#endif
+
   DTRACE0(RT_INIT);
+
   options_t opt;
   memset(&opt, 0, sizeof(options_t));
 
@@ -188,6 +201,10 @@ PONY_API int pony_stop()
     ponyint_os_sockets_final();
     language_init = false;
   }
+
+  #if defined(USE_ETW)
+  TraceLoggingUnregister(etw_provider);
+  #endif
 
   int ec = pony_get_exitcode();
 #ifdef USE_VALGRIND
